@@ -309,8 +309,8 @@ Diagram meta::pure::changetoken::Diagram(width=0.0, height=0.0)
     PropertyView pview_0(
         property=meta::pure::changetoken::AddRemoveField.defaultValue,
         source=cview_5,
-        target=cview_3
-,        points=[(743.95410,802.00000),(318.89453,889.00000)],
+        target=cview_3,
+        points=[(743.95410,802.00000),(318.89453,889.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -323,8 +323,8 @@ Diagram meta::pure::changetoken::Diagram(width=0.0, height=0.0)
     PropertyView pview_1(
         property=meta::pure::changetoken::CopyValue.source,
         source=cview_2,
-        target=cview_10
-,        points=[(458.22852,1056.00000),(457.28613,1159.00000)],
+        target=cview_10,
+        points=[(458.22852,1056.00000),(457.28613,1159.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -337,8 +337,8 @@ Diagram meta::pure::changetoken::Diagram(width=0.0, height=0.0)
     PropertyView pview_2(
         property=meta::pure::changetoken::Version.changeTokens,
         source=cview_15,
-        target=cview_8
-,        points=[(741.62305,474.00000),(740.63281,586.00000)],
+        target=cview_8,
+        points=[(741.62305,474.00000),(740.63281,586.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -351,8 +351,8 @@ Diagram meta::pure::changetoken::Diagram(width=0.0, height=0.0)
     PropertyView pview_3(
         property=meta::pure::changetoken::Versions.versions,
         source=cview_16,
-        target=cview_15
-,        points=[(742.29688,373.00000),(741.62305,474.00000)],
+        target=cview_15,
+        points=[(742.29688,373.00000),(741.62305,474.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),

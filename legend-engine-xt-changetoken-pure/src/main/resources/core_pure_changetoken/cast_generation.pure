@@ -177,10 +177,12 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   let rootObjVar = j_parameter(objectNode(), 'rootObjectNode');
   let pathVar = j_parameter(javaList(javaObject()), 'path');
   let changeTokenHandlers = $version.changeTokens
-    ->filter(t|$t->instanceOf(AddField)) // TODO: handle all changetoken types
-    ->fold({t,res|
-      _handleAddFieldUpcast($t->cast(@AddField), $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
-    }, []);
+    ->map(t|$t->match([
+      // TODO: handle all changetoken types
+      t:AddField[1] | _handleAddFieldUpcast($t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
+      t:ChangeFieldType[1] | _handleChangeFieldTypeUpcast($t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
+    ]))
+    ->fold({t,res | $res->concatenate($t)}, []);
 
   // private static Map<String,Object> _upcast_to_version_object(Map<String,Object> rootObjectNode, List<Object> path, Map<String,Object> objectNode)
   let class3 = $class2->addMethod(javaMethod(['private', 'static'], objectNode(), $objRecurseFuncName, [$rootObjVar, $pathVar, $objVar], j_block(
@@ -432,7 +434,6 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
   // if (type.equals(token.class))
   j_if(
     $typeVar->j_invoke('equals', [j_string($token.class)]),
-    // TODO: need copy logic here too and other formatters
     $token.defaultValue->match([
       // objectNode.put(fieldName, defaultValue)
       df:ConstValue[1] | $objVar->j_invoke('put', [j_string($token.fieldName), j_int($df.value->cast(@Integer))], javaVoid()),
@@ -450,6 +451,52 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
     ])
   );
 }
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_changeFieldTypeMappings()
+  : Pair<Pair<String,String>,Function<>>
+{
+  [
+    ^Pair(^Pair('Integer[1]', 'String[1]'), _intToStringMapping)  
+  ]
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleChangeFieldTypeUpcast
+(
+  token:ChangeFieldType[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]
+):Code[1]  
+{
+  let valVar = j_variable(javaObject(), 'value');
+
+  // if (type.equals(token.class))
+  j_if(
+    $typeVar->j_invoke('equals', [j_string($token.class)]),
+
+    [j_int(123)]
+
+    // all pairs of types here: from->to
+    // if integer[1]->string[1]
+    //    Integer.toString((Integer)get("field"))
+
+
+
+    // $token.defaultValue->match([
+    //   // objectNode.put(fieldName, defaultValue)
+    //   df:ConstValue[1] | $objVar->j_invoke('put', [j_string($token.fieldName), j_int($df.value->cast(@Integer))], javaVoid()),
+    //   df:CopyValue[1] | 
+    //   [
+    //     // Object value = GenerateCastUtil.resolveRelativeReference(rootObjectNode, path, "../existingValue");
+    //     $valVar->j_declare(castUtil()->j_invoke('resolveRelativeReference', [
+    //       $rootObjVar, 
+    //       $pathVar, 
+    //       j_string($df.source->cast(@RelativeFieldReference).path) // TODO: handle other types of references
+    //     ], javaObject())),
+    //     // res.put("abc", value);
+    //     $resVar->j_invoke('put', [j_string($token.fieldName), $valVar], javaVoid())
+    //   ]
+    // ])
+  );
+}
+
 
 function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddFieldDowncast(
   token:AddField[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1]):Code[1]
