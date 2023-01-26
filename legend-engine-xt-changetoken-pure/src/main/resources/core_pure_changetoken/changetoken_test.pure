@@ -114,9 +114,33 @@ function meta::pure::changetoken::tests::getVersions3():Versions[1]
   ); 
 }
 
+// This is test Versions: RenameField
+function meta::pure::changetoken::tests::getVersions4():Versions[1]
+{
+  ^Versions(
+    versions=[
+      ^Version( // base version
+        version='ftdm:abcdefg123'
+      ),
+      ^Version(
+        version='ftdm:abcdefg456',
+        prevVersion='ftdm:abcdefg123',
+        changeTokens=[
+          ^RenameField(
+            class='meta::pure::changetoken::tests::SampleClass',
+            oldFieldName='abc',
+            newFieldName='xyz'
+          )
+        ]
+      )
+    ]
+  ); 
+}
+
+
 function <<test.Test>> meta::pure::changetoken::tests::testGenerateCast():Boolean[1]
 {
-  let project = generateCast('meta::pure::changetoken:tests::getVersions3', 'TestCastFunction');
+  let project = generateCast('meta::pure::changetoken:tests::getVersions4', 'TestCastFunction');
   printProject($project);
   assertInstanceOf($project, Project);
 }

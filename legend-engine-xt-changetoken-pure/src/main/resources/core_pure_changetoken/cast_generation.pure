@@ -180,7 +180,8 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   let changeTokenHandlers = $version.changeTokens
     ->map(t|$t->match([
       t:AddField[1]|_handleAddFieldUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
-      t:ChangeFieldType[1]|_handleChangeFieldTypeUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
+      t:ChangeFieldType[1]|_handleChangeFieldTypeUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
+      t:RenameField[1]|_handleRenameFieldUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
     ]))
     ->fold({t,res|$res->concatenate($t)}, []);
 
@@ -251,7 +252,8 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   let changeTokenHandlers = $version.changeTokens
     ->map(t|$t->match([
       t:AddField[1]|_handleAddFieldDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
-      t:ChangeFieldType[1]|_handleChangeFieldTypeDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
+      t:ChangeFieldType[1]|_handleChangeFieldTypeDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
+      t:RenameField[1]|_handleRenameFieldDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
     ]))
     ->fold({t,res|$res->concatenate($t)}, []);
 
@@ -492,6 +494,26 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleCha
 }
 
 
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleRenameFieldUpcast
+(
+  class:meta::external::language::java::metamodel::Class[1],
+  token:RenameField[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]
+):Code[1]
+{
+  // if (type.equals(token.class))
+  j_if(
+    $typeVar->j_invoke('equals', [j_string($token.class)]),
+    [
+      // res.put("xyz", objectNode.get("abc"))
+      $resVar->j_invoke('put', [
+        j_string($token.newFieldName),
+        $objVar->j_invoke('get', [j_string($token.oldFieldName)], javaObject())
+      ], javaVoid())
+    ]
+  );
+}
+
+
 function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddFieldDowncast(
   class:meta::external::language::java::metamodel::Class[1],
   token:AddField[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]):Code[1]
@@ -544,6 +566,26 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleCha
           $pathVar, 
           $objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())
         ], javaObject())
+      ], javaVoid())
+    ]
+  );
+}
+
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleRenameFieldDowncast
+(
+  class:meta::external::language::java::metamodel::Class[1],
+  token:RenameField[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]
+):Code[1]
+{
+  // if (type.equals(token.class))
+  j_if(
+    $typeVar->j_invoke('equals', [j_string($token.class)]),
+    [
+      // res.put("abc", objectNode.get("xyz"))
+      $resVar->j_invoke('put', [
+        j_string($token.oldFieldName),
+        $objVar->j_invoke('get', [j_string($token.newFieldName)], javaObject())
       ], javaVoid())
     ]
   );
