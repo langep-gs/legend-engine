@@ -173,6 +173,7 @@
         <module>legend-engine-pure-code-compiled-core</module>
 
         <module>legend-engine-xt-changetoken-pure</module>
+        <module>legend-engine-xt-changetoken-pure-test</module>
         <module>legend-engine-xt-changetoken-compiler</module>
 
         <module>legend-engine-pure-ide-light</module>
@@ -1583,6 +1584,12 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-changetoken-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-changetoken-pure-test</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

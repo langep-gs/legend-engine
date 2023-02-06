@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::language::java::factory::*;
 import meta::pure::changetoken::*;
 import meta::pure::constraints::functions::*;
 import meta::pure::changetoken::cast_generation::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;
+import meta::external::language::java::compiler::*;
+import meta::pure::functions::collection::*;
 
 function <<test.Test>> meta::pure::changetoken::tests::testToString():Boolean[1]
 {
@@ -143,4 +146,10 @@ function <<test.Test>> meta::pure::changetoken::tests::testGenerateCast():Boolea
   let project = generateCast('meta::pure::changetoken:tests::getVersions4', 'TestCastFunction');
   printProject($project);
   assertInstanceOf($project, Project);
+
+  let res = compileAndExecuteJava($project->allClasses()->map(c|$c->inferImports()), 
+    ^CompilationConfiguration(),
+    ^ExecutionConfiguration(class='org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation.TestCastFunction',method='main'));
+  print($res);
+  assert(and($res.compilationResult.successful, $res.executionResult.successful->toOne()));
 }
