@@ -26,14 +26,21 @@ import meta::pure::functions::collection::*;
 function meta::pure::changetoken::cast_generation::generateCast(versionsFuncName:String[1], outputClassName:String[1]):Project[1]
 {
   // load Versions()
-  let versions = functionDescriptorToId($versionsFuncName + '():Versions[1]')
-    ->pathToElement()->cast(@ConcreteFunctionDefinition<{->Versions[1]}>)
-    ->eval();
+  let versionsFunc = functionDescriptorToId($versionsFuncName + '():Versions[1]')
+    ->pathToElement()->cast(@ConcreteFunctionDefinition<{->Versions[1]}>);
+
+  generateCast($versionsFunc, 'src/main/java', 'org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation', $outputClassName);
+}
+
+function meta::pure::changetoken::cast_generation::generateCast(versionsFunc:Function<{->Versions[1]}>[1], path:String[1], outputPackageName:String[1], outputClassName:String[1]):Project[1]
+{
+  let versions = $versionsFunc->eval();
 
   // generated class  
-  let class = javaClass(['public'], javaPackage('org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation'), $outputClassName);
+  let class = javaClass(['public'], javaPackage($outputPackageName), $outputClassName);
   
   newProject()->addClass(
+    $path,
     $class
       ->_generateUpcastFunction($versions)
       ->_generateDowncastFunction($versions)

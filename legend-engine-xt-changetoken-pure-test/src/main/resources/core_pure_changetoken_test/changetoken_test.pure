@@ -20,6 +20,8 @@ import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::compiler::*;
 import meta::pure::functions::collection::*;
+import meta::pure::changetoken::tests::*;
+import meta::external::language::java::factory::project::*;
 
 function <<test.Test>> meta::pure::changetoken::tests::testToString():Boolean[1]
 {
@@ -140,16 +142,72 @@ function meta::pure::changetoken::tests::getVersions4():Versions[1]
   ); 
 }
 
+function <<access.private>> meta::pure::changetoken::tests::generateTestClass(
+  project:Project[1], packageName:String[1], testClassName:String[1], testedClassName:String[1], inp:String[1], out:String[1]):Project[1]
+{
+  $project->addClass('src/test/java', 
+    javaClass(['public'], javaPackage($packageName), $testClassName)
+    ->addMethod(
+      javaMethod(['public', 'static'], javaVoid(), 'main', [],
+          'System.out.println("Hello, world!\\n");'
+        )
+    )
+  )
+}
 
 function <<test.Test>> meta::pure::changetoken::tests::testGenerateCast():Boolean[1]
 {
-  let project = generateCast('meta::pure::changetoken:tests::getVersions4', 'TestCastFunction');
+//  let f = meta::pure::changetoken::tests::getVersions4__Versions_1_;
+//  print($f->elementToPath());
+
+  let packageName = 'org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation';
+  let testedClassName = 'TestCastFunction';
+  let testClassName = 'GenerateCast4';
+
+  let project = generateCast(meta::pure::changetoken::tests::getVersions4__Versions_1_, 'src/test/java', 
+      $packageName, $testedClassName)
+    ->generateTestClass(
+      $packageName,
+      $testClassName,
+      $testedClassName,
+      '{\n' +
+      '  "version": "ftdm:abcdefg123",\n' +
+      '  "@type": "meta::pure::changetoken::tests::SomeClassWithAnArray",\n' +
+      '  "array": [\n' +
+      '    {\n' +
+      '      "@type": "meta::pure::changetoken::tests::OuterClass",\n' +
+      '      "existingValue": "someValue",\n' +
+      '      "innerObject": {\n' +
+      '        "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+      '        "abc": 123\n' +
+      '      }\n' +
+      '    }\n' +
+      '  ]\n' +
+      '}\n',
+
+      '{\n' +
+      '  "version": "ftdm:abcdefg456",\n' +
+      '  "@type": "meta::pure::changetoken::tests::SomeClassWithAnArray",\n' +
+      '  "array": [\n' +
+      '    {\n' +
+      '      "@type": "meta::pure::changetoken::tests::OuterClass",\n' +
+      '      "existingValue": "someValue",\n' +
+      '      "innerObject": {\n' +
+      '        "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+      '        "abc": 123,\n' +
+      '        "xyz": 123\n' +
+      '      }\n' +
+      '    }\n' +
+      '  ]\n' +
+      '}\n'
+    );
+
   printProject($project);
   assertInstanceOf($project, Project);
 
   let res = compileAndExecuteJava($project->allClasses()->map(c|$c->inferImports()), 
     ^CompilationConfiguration(),
-    ^ExecutionConfiguration(class='org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation.TestCastFunction',method='main'));
+    ^ExecutionConfiguration(class=$packageName + '.' + $testClassName,method='main'));
   print($res);
   assert(and($res.compilationResult.successful, $res.executionResult.successful->toOne()));
 }
