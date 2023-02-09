@@ -142,6 +142,14 @@ function meta::pure::changetoken::tests::getVersions4():Versions[1]
   ); 
 }
 
+Class
+{
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'org.junit.Test'
+}
+meta::pure::changetoken::tests::Test extends meta::external::language::java::metamodel::Annotation
+{
+}
+
 function <<access.private>> meta::pure::changetoken::tests::generateTestClass(
   project:Project[1], packageName:String[1], testClassName:String[1], testedClassName:String[1], inp:String[1], out:String[1]):Project[1]
 {
@@ -149,8 +157,17 @@ function <<access.private>> meta::pure::changetoken::tests::generateTestClass(
     javaClass(['public'], javaPackage($packageName), $testClassName)
     ->addMethod(
       javaMethod(['public', 'static'], javaVoid(), 'main', [],
-          'System.out.println("Hello, world!\\n");'
+          // 'var res = new org.junit.runner.JUnitCore().run(' + $testClassName + '.class);\n' +
+          // 'if (!res.wasSuccessful()) throw new RuntimeException("Something failed");'
+          // 'System.out.println("hello123");'
+          'org.junit.runner.JUnitCore runner = new org.junit.runner.JUnitCore();'
         )
+    )
+    ->addMethod(
+      javaMethod(['public'], javaVoid(), 'testUpcast', [],
+        'org.junit.Assert.assertEquals(true, true);'        
+      )
+      ->addAnnotation(^meta::pure::changetoken::tests::Test())
     )
   )
 }
@@ -205,8 +222,14 @@ function <<test.Test>> meta::pure::changetoken::tests::testGenerateCast():Boolea
   printProject($project);
   assertInstanceOf($project, Project);
 
+  // let res = compileJava($project->allClasses()->map(c|$c->inferImports()), 
+  //   ^CompilationConfiguration(classpath='D:/Code/.m2/repository/junit/junit/4.13.1/junit-4.13.1.jar')
+  // );
+  // print($res);
+  // assert($res.successful);
+
   let res = compileAndExecuteJava($project->allClasses()->map(c|$c->inferImports()), 
-    ^CompilationConfiguration(),
+    ^CompilationConfiguration(classpath='D:/Code/.m2/repository/junit/junit/4.13.1/junit-4.13.1.jar'),
     ^ExecutionConfiguration(class=$packageName + '.' + $testClassName,method='main'));
   print($res);
   assert(and($res.compilationResult.successful, $res.executionResult.successful->toOne()));
